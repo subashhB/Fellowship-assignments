@@ -8,31 +8,47 @@ contract Todo{
     Choose the appropriate variable type for each field.
 
     */
+    struct Task{
+        uint256 id;
+        string title;
+        bool completed;
+    }
   
     ///Create a counter to keep track of added tasks
+    uint256 counter;
 
     /*
     create a mapping that maps the counter created above with the struct taskcount
     key should of type integer
     */
-   
+    mapping(uint256 => Task) public taskCount;
+
     /*
     Define a constructor
     the constructor takes no arguments
     Set the owner to the creator of the contract
     Set the counter to  zero
     */
-    
+    constructor(){
+        owner = msg.sender;
+        counter = 0;
+    }
+
     /*
 
     Define 2 events
     taskadded should provide information about the title of the task and the id of the task
     taskcompleted should provide information about task status and the id of the task
     */ 
-    
+    event TaskAdded(uint256 id, string title);
+    event TaskCompleted(bool taskCompleted, uint256 id);
  /*
         Create a modifier that throws an error if the msg.sender is not the owner.
     */
+    modifier onlyOwner{
+        require(msg.sender == owner, 'You are not the owner');
+        _;
+    }
     
 
     /*
@@ -42,17 +58,31 @@ contract Todo{
     Be sure to check :
     taskadded event is emitted
      */
+    function addTask(string memory _title) public{
+        taskCount[counter].id = counter;
+        taskCount[counter].title = _title;
+        counter++;
+        emit TaskAdded(taskCount[counter-1].id, taskCount[counter-1].title);
+    }
 
     
 
     /*Define a function  to get total number of task added in this contract*/
-    
+    function totalTasks() public view returns (uint256){
+        return counter;
+    }
 
     /**
     Define a function gettask()
     This function takes 1 argument ,task id and 
     returns the task name ,task id and status of the task
      */
+    function getTask(uint256 _id) public view returns (string memory taskName, uint256 taskId, bool status){
+        Task memory t = taskCount[_id];
+        taskName  = t.title;
+        taskId = t.id;
+        status = t.completed;
+    }
     
     /**Define a function marktaskcompleted()
     This function takes 1 argument , task id and 
@@ -60,5 +90,9 @@ contract Todo{
     Be sure to check:
     taskcompleted event is emitted
      */
+    function markTaskCompleted(uint256 _id) public onlyOwner{
+        taskCount[_id].completed = true;
+        emit TaskCompleted(taskCount[_id].completed, taskCount[_id].id);
+    }
     
 }
